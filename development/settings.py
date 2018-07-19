@@ -43,7 +43,7 @@ DATABASE_URL = 'postgres://diadgcgveryctj:db5bb04050f568b6beb54d657db241dac97259
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['207.246.120.170']
 
 
 
@@ -171,6 +171,8 @@ USE_TZ = True
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
 
 AUTH_USER_MODEL = 'users.User'
 
