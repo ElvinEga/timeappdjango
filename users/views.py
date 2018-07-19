@@ -99,8 +99,8 @@ def create_user(request):
     )
     account.save()
 
-    permissions = Permission.objects.all()
-    assign_permissions(permissions, user_details['permissions'], user)
+    # permissions = Permission.objects.all()
+    # assign_permissions(permissions, user_details['permissions'], user)
 
 
     return Response({'success': "user added successfully"}, status=status.HTTP_201_CREATED)
