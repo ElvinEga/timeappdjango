@@ -134,14 +134,6 @@ def send_money(request):
         )
         tran.save()
 
-        tran2 = Transaction(
-            transact_account=sender_acc,
-            sender=sender.email,
-            receiver=receiver.email,
-            amount=amount,
-            transaction_type="receive"
-        )
-        tran2.save()
         push_notify("Wallet Transaction successful", str("Transfer cash of Ksh " + str(amount) + " From " +
                                                          str(sender.email) + " To " + str(receiver.email)))
         return Response({'success': "Transaction successful"}, status=status.HTTP_201_CREATED)
