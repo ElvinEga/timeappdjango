@@ -106,9 +106,12 @@ def view_account_by_user_id(request, user_id):
 @permission_classes([AllowAny, ])
 def send_money(request):
     request_details = request.data
-    amount = decimal.Decimal(request_details['amount'])
-    sender = User.objects.get(email=request_details['sender'])
-    receiver = User.objects.get(email=request_details['receiver'])
+    try:
+        amount = decimal.Decimal(request_details['amount'])
+        sender = User.objects.get(email=request_details['sender'])
+        receiver = User.objects.get(email=request_details['receiver'])
+    except ObjectDoesNotExist:
+        return Response({'error': 'Account Does Not Exist'}, status=status.HTTP_400_BAD_REQUEST)
 
     # sender Account deducted
     sender_acc = Account.objects.get(user=sender)
@@ -136,9 +139,9 @@ def send_money(request):
 
         push_notify("Wallet Transaction successful", str("Transfer cash of Ksh " + str(amount) + " From " +
                                                          str(sender.email) + " To " + str(receiver.email)))
-        return Response({'success': "Transaction successful"}, status=status.HTTP_201_CREATED)
+        return Response({'success': "Transaction successful"})
     else:
-        return Response({'error': "You have insufficient Amount in account"}, status=status.HTTP_201_CREATED)
+        return Response({'error': "You have insufficient Amount in account to complete the transaction"}, status=status.HTTP_400_BAD_REQUEST)
         # return Response(eval_details, status=status.HTTP_201_CREATED)
 
 
