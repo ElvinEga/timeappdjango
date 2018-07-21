@@ -111,7 +111,7 @@ def view_account_by_user_id(request, user_id):
         # account_details['account'] = account.transact_account
         # account_details['user'] = account.user_id()
         account_details['balance'] = account.balance
-        account_details['date'] = account.date
+        account_details['date'] = account.date_added
 
         return Response(account_details)
 
