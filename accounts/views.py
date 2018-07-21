@@ -127,7 +127,7 @@ def send_money(request):
         sender = User.objects.get(email=request_details['sender'])
         receiver = User.objects.get(email=request_details['receiver'])
     except ObjectDoesNotExist:
-        return Response({'error': 'Account Does Not Exist'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Account Does Not Exist'}, status=status.HTTP_404_NOT_FOUND)
 
     if request_details['sender'] == request_details['receiver']:
         return Response({'error': 'You cannot send to same account'}, status=status.HTTP_400_BAD_REQUEST)
