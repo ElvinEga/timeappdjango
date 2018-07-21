@@ -66,41 +66,57 @@ def view_accounts(request):
     return Response(data)
 
 
+# @api_view(['GET'])
+# @permission_classes((AllowAny,))
+# def view_account_by_user_id(request, user_id):
+#     try:
+#         accs = Account.objects.filter(user=user_id)
+#         data = []
+#         transaction_details = {}
+#         account_details = {}
+#         for account in accs:
+#
+#             account_details['account_id'] = account.id
+#             # account_details['user_id'] = account.user_id()
+#
+#             ac = Account.objects.filter(id=account.id)
+#
+#             trans = Transaction.objects.filter(account_id=ac)
+#             tran_data = []
+#
+#             for transaction in trans:
+#                 transaction_details['id'] = transaction.id
+#                 transaction_details['transact'] = transaction.transact_account
+#                 transaction_details['sender'] = transaction.sender
+#                 transaction_details['receiver'] = transaction.receiver
+#                 transaction_details['amount'] = transaction.amount
+#                 transaction_details['date'] = transaction.date_modified
+#
+#                 tran_data.append(transaction_details)
+#             account_details['transactions'] = tran_data
+#
+#         data.append(account_details)
+#
+#         return Response(data)
+#     except ObjectDoesNotExist:
+#         return Response({'error': "not found"}, status=status.HTTP_404_NOT_FOUND)
 @api_view(['GET'])
 @permission_classes((AllowAny,))
 def view_account_by_user_id(request, user_id):
     try:
-        accs = Account.objects.filter(user=user_id)
-        data = []
-        transaction_details = {}
+        myuser = User.objects.get(id=user_id)
+        account = Account.objects.get(user=myuser)
         account_details = {}
-        for account in accs:
+        account_details['id'] = account.id
+        # account_details['account'] = account.transact_account
+        # account_details['user'] = account.user_id()
+        account_details['balance'] = account.balance
+        account_details['date'] = account.date
 
-            account_details['account_id'] = account.id
-            # account_details['user_id'] = account.user_id()
+        return Response(account_details)
 
-            ac = Account.objects.filter(id=account.id)
-
-            trans = Transaction.objects.filter(account_id=ac)
-            tran_data = []
-
-            for transaction in trans:
-                transaction_details['id'] = transaction.id
-                transaction_details['transact'] = transaction.transact_account
-                transaction_details['sender'] = transaction.sender
-                transaction_details['receiver'] = transaction.receiver
-                transaction_details['amount'] = transaction.amount
-                transaction_details['date'] = transaction.date_modified
-
-                tran_data.append(transaction_details)
-            account_details['transactions'] = tran_data
-
-        data.append(account_details)
-
-        return Response(data)
     except ObjectDoesNotExist:
         return Response({'error': "not found"}, status=status.HTTP_404_NOT_FOUND)
-
 
 @api_view(['POST'])
 @permission_classes([AllowAny, ])
