@@ -77,7 +77,7 @@ def view_account_by_user_id(request, user_id):
         for account in accs:
 
             account_details['account_id'] = account.id
-            account_details['user_id'] = account.user_id()
+            # account_details['user_id'] = account.user_id()
 
             ac = Account.objects.filter(id=account.id)
 
