@@ -2,7 +2,7 @@ from accounts.models import Account, Transaction
 
 import decimal
 
-__all__ = ['view_transactions', 'view_account_by_user_id', 'send_money', 'view_accounts']
+__all__ = ['view_transactions', 'view_account_by_user_id', 'send_money', 'view_accounts', 'view_transactions_by_number']
 
 from django.shortcuts import render
 from django.contrib.auth import authenticate
@@ -41,6 +41,29 @@ def view_transactions(request):
         transaction_details['date'] = transaction.date_added
 
         data.append(transaction_details)
+
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny, ])
+def view_transactions_by_number(request, number):
+    trans = Transaction.objects.all()
+    if not trans:
+        return Response([])
+
+    data = []
+    for transaction in trans:
+        if transaction.sender == number or transaction.receiver == number:
+            transaction_details = {}
+            transaction_details['id'] = transaction.id
+            # transaction_details['transaction'] = transaction.transact_account
+            transaction_details['sender'] = transaction.sender
+            transaction_details['receiver'] = transaction.receiver
+            transaction_details['amount'] = transaction.amount
+            transaction_details['date'] = transaction.date_added
+
+            data.append(transaction_details)
 
     return Response(data)
 
