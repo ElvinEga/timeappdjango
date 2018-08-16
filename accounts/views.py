@@ -2,7 +2,8 @@ from accounts.models import Account, Transaction
 
 import decimal
 
-__all__ = ['view_transactions', 'view_account_by_user_id', 'send_money', 'view_accounts', 'view_transactions_by_number']
+__all__ = ['view_transactions', 'view_account_by_user_id', 'send_money', 'view_accounts', 'view_transactions_by_number',
+           'multi_send_money']
 
 from django.shortcuts import render
 from django.contrib.auth import authenticate
@@ -185,6 +186,74 @@ def send_money(request):
     else:
         return Response({'error': "You have insufficient Amount in account to complete the transaction"}, status=status.HTTP_400_BAD_REQUEST)
         # return Response(eval_details, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def multi_send_money(request):
+    request_details = request.data
+    try:
+        total = decimal.Decimal(request_details['total'])
+        sender = User.objects.get(email=request_details['sender'])
+        receivers = request_details['receivers']
+
+        sender_acc = Account.objects.get(user=sender)
+        if sender_acc.balance < total:
+            return Response({'error': "You have insufficient Amount in account to complete the transaction"},
+                            status=status.HTTP_400_BAD_REQUEST)
+    except ObjectDoesNotExist:
+        return Response({'error': 'Account Does Not Exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    transact = receivers
+    for trans in transact:
+        try:
+            amount = decimal.Decimal(trans['amount'])
+            sender = User.objects.get(email=trans['sender'])
+            receiver = User.objects.get(email=trans['receiver'])
+        except ObjectDoesNotExist:
+            return Response({'error': 'Account Does Not Exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    for trans in transact:
+        try:
+            amount = decimal.Decimal(trans['amount'])
+            sender = User.objects.get(email=trans['sender'])
+            receiver = User.objects.get(email=trans['receiver'])
+        except ObjectDoesNotExist:
+            return Response({'error': 'Account Does Not Exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        if trans['sender'] == trans['receiver']:
+            return Response({'error': 'You cannot send to same account'}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+        # sender Account deducted
+        sender_acc = Account.objects.get(user=sender)
+        if sender_acc.balance > amount and sender_acc.balance > 1:
+
+            sender_balance = sender_acc.balance - amount
+            sender_acc.balance = sender_balance
+            sender_acc.save()
+
+            # receiver Account added
+            receiver_acc = Account.objects.get(user=receiver)
+            receiver_balance = receiver_acc.balance + amount
+            receiver_acc.balance = receiver_balance
+            receiver_acc.save()
+
+            # Add transaction
+            tran = Transaction(
+                transact_account=sender_acc,
+                sender=sender.email,
+                receiver=receiver.email,
+                amount=amount,
+                transaction_type="send"
+            )
+            tran.save()
+
+            push_notify("Wallet Transaction successful", str("Transfer cash of Ksh " + str(amount) + " From " +
+                                                             str(sender.email) + " To " + str(receiver.email)))
+        else:
+            return Response({'error': "You have insufficient Amount in account to complete the transaction"}, status=status.HTTP_400_BAD_REQUEST)
+            # return Response(eval_details, status=status.HTTP_201_CREATED)
+    return Response({'success': "Transaction successful"})
 
 
 def push_notify(title, message):
