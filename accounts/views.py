@@ -155,6 +155,10 @@ def send_money(request):
 
     if request_details['sender'] == request_details['receiver']:
         return Response({'error': 'You cannot send to same account'}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+    if amount < 10.0:
+        return Response({'error': "Transaction Failed, Amount is less than 10"},
+                        status=status.HTTP_400_BAD_REQUEST)
+
 
     # sender Account deducted
     sender_acc = Account.objects.get(user=sender)
@@ -196,6 +200,9 @@ def multi_send_money(request):
         total = decimal.Decimal(request_details['total'])
         sender = User.objects.get(email=request_details['sender'])
         receivers = request_details['receivers']
+        if total < 10.0:
+            return Response({'error': "Transaction Failed, Amount is less than 10"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         sender_acc = Account.objects.get(user=sender)
         if sender_acc.balance < total:
@@ -218,6 +225,10 @@ def multi_send_money(request):
             amount = decimal.Decimal(trans['amount'])
             sender = User.objects.get(email=trans['sender'])
             receiver = User.objects.get(email=trans['receiver'])
+
+            if sender_acc.balance < amount:
+                return Response({'error': "You have insufficient Amount in account to complete the transaction"},
+                                status=status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
             return Response({'error': 'Account Does Not Exist'}, status=status.HTTP_404_NOT_FOUND)
 
